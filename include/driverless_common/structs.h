@@ -10,6 +10,10 @@ typedef boost::shared_mutex SharedMutex;
 typedef boost::unique_lock<SharedMutex> WriteLock;
 typedef boost::shared_lock<SharedMutex> ReadLock;
 
+//SharedMutex wr_mutex
+//WriteLock wlck(wr_mutex)
+//ReadLock  rlck(wr_mutex)
+
 
 /*@brief 车辆控制信息*/
 typedef struct ControlCmd
@@ -29,6 +33,7 @@ typedef struct ControlCmd
 	bool  validity;       //指令的全局有效性
 	bool  speed_validity; //仅速度指令的有效性
 	float speed;
+	bool steer_validity;
 	float roadWheelAngle;
 
 	bool hand_brake;
@@ -317,13 +322,14 @@ public:
 	float resolution;
 	bool  has_curvature;               //是否包含路径曲率
 
-	std::atomic<size_t> pose_index;    //距离车辆最近路径点的索引
+	//std::atomic<size_t> pose_index;    //距离车辆最近路径点的索引
+	size_t pose_index;                 //考虑到该信息不属于路径信息，后期将其删除
+	
 	size_t final_index;                //终点索引
 
 	ParkingPoints park_points;         //停车点信息
 	TurnRanges    turn_ranges;		   //转向区间信息
 	SpeedRanges   speed_ranges;        //限速区间信息
-	std::mutex mutex;
 
 public:
 	size_t size() const {return points.size();}
@@ -331,31 +337,6 @@ public:
 	GpsPoint& operator[](size_t i)             {return points[i];}
 	
 	Path(){} //当定义了拷贝构造函数时，编译器将不提供默认构造函数，需显式定义
-	
-	Path(const Path& obj)
-	{
-		size_t len = obj.points.size();
-		this->points.resize(len);
-		for(size_t i = 0; i < len; i++)
-		{
-		    this->points[i].x = obj.points[i].x;
-		    this->points[i].y = obj.points[i].y;
-		    this->points[i].yaw = obj.points[i].yaw;
-		    this->points[i].curvature = obj.points[i].curvature;
-		    this->points[i].left_width = obj.points[i].left_width;
-		    this->points[i].right_width = obj.points[i].right_width;
-		}
-		this->resolution = obj.resolution;
-		this->has_curvature = obj.has_curvature;
-		
-		size_t temp_idx = obj.pose_index;
-		this->pose_index = temp_idx;
-		this->final_index = obj.final_index;
-		
-		this->park_points = obj.park_points;
-		this->turn_ranges = obj.turn_ranges;
-		this->speed_ranges = obj.speed_ranges;
-	};
 	
 	void clear()                       //清空路径信息
 	{
@@ -390,6 +371,7 @@ public:
 	float wheel_track;
 	float width;
 	float length;
+	float steer_clearance; //转向间隙
 
 	bool validity;
 	VehicleParams()
@@ -404,12 +386,13 @@ public:
 */
 #define LOCK true
 #define UNLOCK  false
+//此类中的读写锁是否具有意义，如果在外部全局加锁，是否会更合理
 class VehicleState 
 {
 public:
 	uint8_t gear;         //档位
-	float   speed;        //车速
-	float   steer_angle;  //前轮转角
+	float   speed = 0.0;        //车速
+	float   steer_angle = 0.0;  //前轮转角
 	Pose    pose;         //车辆位置
 
 	bool speed_validity = false;
@@ -417,6 +400,7 @@ public:
 	bool pose_validity  = false;
 
 	SharedMutex wr_mutex;//读写锁
+	
 
 	void setSpeed(const float& val)
 	{
@@ -438,8 +422,14 @@ public:
 
 	void setGear(uint8_t g)
 	{
-		ReadLock writeLock(wr_mutex);
+		WriteLock lc(wr_mutex);
 		gear = g;
+	}
+	
+	void setPoseValid(bool flag)
+	{
+		WriteLock writeLock(wr_mutex);
+		pose_validity = flag;
 	}
 
 	uint8_t getGear()
@@ -476,12 +466,17 @@ public:
 		}
 		return pose;
 	}
+	
+	bool getPoseValid() const
+	{
+		return pose_validity;
+	}
 
 	VehicleState(){} //当定义了拷贝构造函数时，编译器将不提供默认构造函数，需显式定义
 
 	VehicleState(const VehicleState& obj)
 	{
-		ReadLock readLock(wr_mutex);
+		WriteLock lck(wr_mutex);
 		this->speed       = obj.speed;
 		this->steer_angle = obj.steer_angle;
 		this->pose        = obj.pose;
@@ -491,7 +486,7 @@ public:
 	};
 	const VehicleState& operator=(const VehicleState& obj)
 	{
-		ReadLock readLock(wr_mutex);
+		WriteLock lck(wr_mutex);
 		this->speed       = obj.speed;
 		this->steer_angle = obj.steer_angle;
 		this->pose        = obj.pose;
