@@ -23,6 +23,6 @@ bool success
 ---
 
 #Define a feedback message
-float32 speed
-float32 steer_angle
+float32 speed       #km/h
+float32 steer_angle #deg ccw(-) cw(+)
 float32 percentage

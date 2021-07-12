@@ -8,6 +8,6 @@ bool    driverless
 uint8   gear
 bool    hand_brake
 bool    emergency_brake
-float32 speed
-float32 roadwheel_angle
+float32 speed            #km/h
+float32 roadwheel_angle  #deg ccw(-) cw(+)
 

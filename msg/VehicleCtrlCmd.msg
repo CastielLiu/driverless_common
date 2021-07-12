@@ -10,7 +10,7 @@ uint8   gear
 float32 speed       #km/h
 float32 brake       #0-100
 float32 accelerate  #m/s2
-float32 roadwheel_angle  #deg
+float32 roadwheel_angle  #deg ccw(-) cw(+)
 
 bool    emergency_brake
 bool    hand_brake

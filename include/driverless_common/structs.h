@@ -391,7 +391,7 @@ class VehicleState
 {
 public:
 	uint8_t gear;         //档位
-	float   speed = 0.0;        //车速
+	float   speed = 0.0;        //车速 km/h
 	float   steer_angle = 0.0;  //前轮转角
 	Pose    pose;         //车辆位置
 
