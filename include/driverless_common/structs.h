@@ -295,6 +295,13 @@ public:
 	Point(){}
 	Point(double _x, double _y, double _z=0.0):
 		x(_x), y(_y), z(_z){}
+	
+	float disTo(const Point& point) const 
+	{
+		float dx = point.x - x;
+		float dy = point.y - y;
+		return sqrt(dx*dx + dy*dy);
+	}
 };
 
 /*@brief 位姿信息*/
@@ -325,7 +332,8 @@ public:
 	//std::atomic<size_t> pose_index;    //距离车辆最近路径点的索引
 	size_t pose_index;                 //考虑到该信息不属于路径信息，后期将其删除
 	
-	size_t final_index;                //终点索引
+	size_t final_index;                //终点索引，路径被载入时的最后一个点的索引
+									   //对于被延伸的路径路径最后一个点可能与路径终点不一致
 
 	ParkingPoints park_points;         //停车点信息
 	TurnRanges    turn_ranges;		   //转向区间信息
@@ -337,6 +345,20 @@ public:
 	GpsPoint& operator[](size_t i)             {return points[i];}
 	
 	Path(){} //当定义了拷贝构造函数时，编译器将不提供默认构造函数，需显式定义
+
+	//通过路径起点和尾点的距离是否在一定范围内，判断路径是否可循环驾驶
+	bool recyclable(float max_dis = 0.5) const
+	{
+		//终点索引大于点的个数，程序异常！
+		//终点索引过小则路径较短，无法‘循环’驾驶
+		if(final_index >= points.size() || final_index < 2)
+			return false;
+
+		//起点与终点距离过远，无法循环驾驶
+		if(points[0].disTo(points[final_index]) > max_dis)
+			return false;
+		return true;
+	}
 	
 	void clear()                       //清空路径信息
 	{
@@ -356,6 +378,41 @@ public:
 		float dis = (final_index - pose_index) * resolution;
 		if(dis < 0) dis = 0;
 		return dis;
+	}
+
+	//延伸路径, 在路径的末尾增加一段距离的点
+	bool extend(float extendDis)
+	{
+		//if(extended) return false;
+
+		//取最后一个点与倒数第n个点的连线向后插值
+		//总路径点不足n个,退出
+		int n = 5;
+		//std::cout << "extendPath: " << points.size() << "\t" << points.size()-1 << std::endl;
+		if(points.size()-1 < n)
+		{
+			printf("path points is too few (%lu), extend path failed",points.size()-1);
+			return false;
+		}
+		int endIndex = points.size()-1;
+		
+		float dx = (points[endIndex].x - points[endIndex-n].x)/n;
+		float dy = (points[endIndex].y - points[endIndex-n].y)/n;
+		float ds = sqrt(dx*dx+dy*dy);
+
+		GpsPoint point;
+		float remaind_dis = 0.0;
+		for(size_t i=1;;++i)
+		{
+			point.x = points[endIndex].x + dx*i;
+			point.y = points[endIndex].y + dy*i;
+			point.curvature = 0.0;
+			points.push_back(point);
+			remaind_dis += ds;
+			if(remaind_dis > extendDis)
+				break;
+		}
+		return true;
 	}
 };
 
