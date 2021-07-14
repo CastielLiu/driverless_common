@@ -346,6 +346,7 @@ public:
 	
 	Path(){} //当定义了拷贝构造函数时，编译器将不提供默认构造函数，需显式定义
 
+	//路径是否可循环驾驶
 	//通过路径起点和尾点的距离是否在一定范围内，判断路径是否可循环驾驶
 	bool recyclable(float max_dis = 0.5) const
 	{
@@ -358,6 +359,25 @@ public:
 		if(points[0].disTo(points[final_index]) > max_dis)
 			return false;
 		return true;
+	}
+
+	//获取路径上距离参考点(ref_p)最近的点
+	GpsPoint nearest(const Point& ref_p) const
+	{
+		float min_dis = 99999;
+		size_t nearest_index = 0;
+		for(size_t i=0; i<points.size(); ++i)
+		{
+			float dis = ref_p.disTo(points[i]);
+			//std::cout << i << "\t" << dis << std::endl;
+			if(dis < min_dis)
+			{
+				min_dis = dis;
+				nearest_index = i;
+			}
+		}
+		//std::cout << "nearest_index:" << nearest_index <<"\tmin_dis:" << min_dis << std::endl;
+		return points[nearest_index];
 	}
 	
 	void clear()                       //清空路径信息

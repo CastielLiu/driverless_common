@@ -160,7 +160,7 @@ static bool loadPathPoints(std::string file_path,Path& path)
 /*@brief 从xml文件载入路径信息
  *@1. 停车点-若文件不包含终点信息，手动添加√
  *@2. 转向区间-控制转向灯　
- *@3. 
+ *@?. 目前未对索引的有效性进行判断
 */
 #include <tinyxml2.h>
 static bool loadPathAppendInfos(const std::string& file, Path& global_path, const std::string& user)

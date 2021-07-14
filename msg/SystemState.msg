@@ -7,6 +7,7 @@ uint8   STATE_STOP=3
 
 uint8   state
 string  task_state
+string  location_source  #gps? slam? xxx?
 float64 position_x
 float64 position_y
 float64 yaw
