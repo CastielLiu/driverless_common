@@ -12,6 +12,8 @@ uint8 type
 geometry_msgs/Pose2D   target_pose  #POSE_TYPE
 geometry_msgs/Pose2D[] target_path  #PATH_TYPE
 string  roadnet_file                #FILE_TYPE
+string  roadnet_ext_file            #FILE_TYPE
+
 bool    path_filp
 
 bool    cycle_run         #weather let robot running along a cycle road?
