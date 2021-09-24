@@ -317,8 +317,8 @@ class GpsPoint : public Pose
 public:
 	double longitude;
 	double latitude;
-	float curvature;
-	float left_width;
+    float curvature;
+    float left_width;
 	float right_width;
 };
 

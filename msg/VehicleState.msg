@@ -1,3 +1,4 @@
+# vehicle state reported from wired-chassis 
 
 uint8   GEAR_DRIVE=11
 uint8   GEAR_NEUTRAL=12

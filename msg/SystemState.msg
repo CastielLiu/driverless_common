@@ -4,6 +4,7 @@ uint8   STATE_IDLE=0
 uint8   STATE_DRIVE=1
 uint8   STATE_REVERSE=2
 uint8   STATE_STOP=3
+uint8   STATE_FORCE_EXTERN_CONTROL=6
 
 uint8   state
 string  task_state

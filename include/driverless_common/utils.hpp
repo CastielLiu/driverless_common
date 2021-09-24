@@ -114,7 +114,7 @@ static bool calPathCurvature(Path& path)
  *       若文件中不包含曲率信息，则调用曲率计算函数进行计算
  *@return false: 载入失败
  */
-static bool loadPathPoints(std::string file_path,Path& path)
+static bool loadPathPoints(const std::string& file_path,Path& path)
 {
 	std::ifstream in_file(file_path.c_str());
 	if(!in_file.is_open())
@@ -127,14 +127,26 @@ static bool loadPathPoints(std::string file_path,Path& path)
 	path.clear();  //首先清除历史路径点信息
 
 	bool has_curvature = false;
+    bool first_line = true;
 	while(in_file.good())
 	{
 		getline(in_file,line);
+
+        //若首行为title, 则跳过
+        if(first_line)
+        {
+            first_line = false;
+            if(line.substr(0,5) == "title")
+                continue;
+        }
+
 		if(line.length() == 0)  //处理当文件为空或者末尾空行的情况
 			break;
 
 		std::stringstream ss(line);
-		ss >> point.x >> point.y >> point.yaw >> point.curvature;
+        ss >> point.x >> point.y >> point.yaw >> point.curvature >> point.left_width >> point.right_width
+                >> point.longitude >> point.latitude;
+
 		if(!has_curvature && point.curvature!=0)
 			has_curvature = true;
 		path.points.push_back(point);
