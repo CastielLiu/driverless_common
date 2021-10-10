@@ -1,5 +1,5 @@
-#ifndef UTILS_H_
-#define UTILS_H_
+#ifndef DRIVERLESS_COMMON_UTILS_H_
+#define DRIVERLESS_COMMON_UTILS_H_
 
 #include <cstring>
 #include <cmath>
@@ -12,6 +12,12 @@
 #include <exception>
 #include <fstream>
 #include <driverless_common/structs.h>
+
+// 将所有函数声明为静态函数,防止头文件重复包含导致的函数重复定义报错
+// 未使用static修饰的函数或变量具有全局可见性, 
+// 当a.cpp 和 b.cpp均包含此头文件时, 将分别引入函数的定义
+// 若未使用static修饰, a和b中的函数相互可见而导致重定义
+// 使用static修饰后, 互不可见, 互不干涉
 
 /*@brief 角度归一化，(-pi, pi]
  */

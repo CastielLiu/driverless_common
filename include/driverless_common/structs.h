@@ -1,18 +1,26 @@
-#ifndef STRUCTS_H_
-#define STRUCTS_H_
+#ifndef DRIVERLESS_COMMON_STRUCTS_H_
+#define DRIVERLESS_COMMON_STRUCTS_H_
 
 #include <atomic>
 #include <boost/thread/locks.hpp>    
-#include <boost/thread/shared_mutex.hpp>    
+#include <boost/thread/shared_mutex.hpp>
+#include <boost/thread/recursive_mutex.hpp>    
 #include <mutex>
+#include <driverless_common/VehicleState.h>
 
 typedef boost::shared_mutex SharedMutex;
 typedef boost::unique_lock<SharedMutex> WriteLock;
 typedef boost::shared_lock<SharedMutex> ReadLock;
-
+//读写锁使用方法
 //SharedMutex wr_mutex
 //WriteLock wlck(wr_mutex)
 //ReadLock  rlck(wr_mutex)
+
+typedef boost::recursive_mutex RecursiveMutex;
+typedef boost::recursive_mutex::scoped_lock RecursiveLock;
+//递归锁,同一线程可多次获得锁, 不同线程互斥
+//RecursiveMutex re_mutex
+//RecursiveLock rlck(re_mutex)
 
 
 /*@brief 车辆控制信息*/
@@ -467,6 +475,7 @@ public:
 class VehicleState 
 {
 public:
+	bool driverless_mode;  //是否为自动驾驶模式
 	uint8_t gear;         //档位
 	float   speed = 0.0;        //车速 km/h
 	float   steer_angle = 0.0;  //前轮转角
@@ -547,6 +556,31 @@ public:
 	bool getPoseValid() const
 	{
 		return pose_validity;
+	}
+
+	// 车速是否足够小, 用于停车判断
+	bool speedLowEnough()
+	{
+		ReadLock readLock(wr_mutex);
+		return fabs(speed) < 0.1;
+	}
+
+	bool isDriveGear()
+	{
+		ReadLock readLock(wr_mutex);
+		return gear == driverless_common::VehicleState::GEAR_DRIVE;
+	}
+
+	bool isReverseGear()
+	{
+		ReadLock readLock(wr_mutex);
+		return gear == driverless_common::VehicleState::GEAR_REVERSE;
+	}
+
+	bool isNeutralGear()
+	{
+		ReadLock readLock(wr_mutex);
+		return gear == driverless_common::VehicleState::GEAR_NEUTRAL;
 	}
 
 	VehicleState(){} //当定义了拷贝构造函数时，编译器将不提供默认构造函数，需显式定义

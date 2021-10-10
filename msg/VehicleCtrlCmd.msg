@@ -1,4 +1,5 @@
 
+uint8 GEAR_INITIAL=0
 uint8 GEAR_DRIVE=1
 uint8 GEAR_REVERSE=9
 uint8 GEAR_NEUTRAL=10
@@ -14,7 +15,9 @@ float32 roadwheel_angle  #deg ccw(-) cw(+)
 
 bool    emergency_brake
 bool    hand_brake
-bool    left_turn_light
-bool    right_turn_light
+bool    turnlight_r
+bool    turnlight_l
+bool    low_beam
+bool    high_beam
 bool    brake_light
 bool    horn
