@@ -34,6 +34,7 @@ typedef struct ControlCmd
 		roadWheelAngle = 0.0;
 		hand_brake = false;
 		turnLight = 0;
+		brake = 0;
 	}
 
 	//当validity有效时,无需在对speed_validity进行判断

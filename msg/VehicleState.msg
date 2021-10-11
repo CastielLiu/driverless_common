@@ -6,11 +6,13 @@ uint8   GEAR_REVERSE=13
 uint8   GEAR_PAKING = 14
 uint8   GEAR_INVALID = 200
 
-bool    ready
+bool    ready       # weather the vehicle is ready
+bool    base_ready  # weather base system is ready for driverless
+                    # false: driverless key is off, or emergency brake key is on, or other error in system
+bool    emergency_brake
 bool    driverless
 uint8   gear
 bool    hand_brake
-bool    emergency_brake
 float32 speed            #km/h
 bool    speed_validity
 float32 roadwheel_angle  #deg ccw(-) cw(+)
