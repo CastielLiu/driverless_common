@@ -1,13 +1,8 @@
 std_msgs/Header header
 
-uint8   STATE_IDLE=0
-uint8   STATE_DRIVE=1
-uint8   STATE_REVERSE=2
-uint8   STATE_STOP=3
-uint8   STATE_FORCE_EXTERN_CONTROL=6
 
-uint8   state
-string  task_state
+uint8   state            # system state id
+
 string  location_source  # gps? slam? xxx?
 
 float64 position_x

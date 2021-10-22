@@ -476,8 +476,9 @@ public:
 class VehicleState 
 {
 public:
-	bool driverless_mode;  //是否为自动驾驶模式
-	uint8_t gear;         //档位
+	bool base_ready = true; //线控系统就绪(硬件急停释放, 自动驾驶开关闭合等要素)
+	bool driverless_mode;   //是否为自动驾驶模式
+	uint8_t gear;           //档位
 	float   speed = 0.0;        //车速 km/h
 	float   steer_angle = 0.0;  //前轮转角
 	Pose    pose;         //车辆位置
@@ -488,7 +489,7 @@ public:
 
 	SharedMutex wr_mutex;//读写锁
 	
-
+public:
 	void setSpeed(const float& val)
 	{
 		WriteLock writeLock(wr_mutex);
@@ -586,19 +587,26 @@ public:
 
 	VehicleState(){} //当定义了拷贝构造函数时，编译器将不提供默认构造函数，需显式定义
 
+	// 重载拷贝构造和赋值构造函数, 以避免读写锁拷贝报错
 	VehicleState(const VehicleState& obj)
 	{
 		WriteLock lck(wr_mutex);
+		this->driverless_mode = obj.driverless_mode;
+		this->base_ready  = obj.base_ready;
+		this->gear        = obj.gear;
 		this->speed       = obj.speed;
 		this->steer_angle = obj.steer_angle;
 		this->pose        = obj.pose;
 		this->speed_validity    = obj.speed_validity;
 		this->steer_validity    = obj.steer_validity;
 		this->pose_validity     = obj.pose_validity;
-	};
+	}
 	const VehicleState& operator=(const VehicleState& obj)
 	{
 		WriteLock lck(wr_mutex);
+		this->driverless_mode = obj.driverless_mode;
+		this->base_ready  = obj.base_ready;
+		this->gear        = obj.gear;
 		this->speed       = obj.speed;
 		this->steer_angle = obj.steer_angle;
 		this->pose        = obj.pose;
@@ -606,29 +614,39 @@ public:
 		this->steer_validity    = obj.steer_validity;
 		this->pose_validity     = obj.pose_validity;
 		return *this;
-	};
+	}
 
 	bool validity(std::string& info)
 	{
 		bool ok = true;
 		if(!speed_validity)
 		{
-            info += "Vehicle speed invalid!  ";
+            info += "[speed] ";
 			ok = false;
 		}
 		if(!steer_validity)
 		{
-            info += "Vehicle steer angle invalid! ";
+            info += "[steer] ";
 			ok = false;
 		}
 		if(pose.x <100 || pose.y <100) //the pose from gps is invailed!
 		{
-            info += "Vehicle pose invalid!";
+            info += "[pose] ";
 			ok = false;
 			pose_validity = false;
 		}
 		else
 			pose_validity = true;
+			
+		if(!base_ready)
+		{
+			info += "[base] ";
+			ok = false;
+		}
+
+		if(!ok)
+			info = "Invalid " + info;
+
 		return ok;
 	}
 

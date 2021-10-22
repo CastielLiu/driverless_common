@@ -1,6 +1,7 @@
 #ifndef DRIVERLESS_COMMON_GLOBAL_VARIABLES_H_
 #define DRIVERLESS_COMMON_GLOBAL_VARIABLES_H_
 
+namespace DriverlessSystem{
 // 此enum务必按照数字顺序填写
 // 否则访问StateName时将出错
 enum SystemState
@@ -30,5 +31,6 @@ enum SystemState
 static const std::vector<std::string> StateName = {"State_Idle", "State_Drive", "State_Reverse",
                     "State_Stop", "State_SwitchToDrive", "State_SwitchToReverse",
                     "State_ForceExternControl", "State_OfflineDebug", "Task Complete", "Task Preempt"};
+} // end namespace DriverlessSystem
 
 #endif
